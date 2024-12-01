@@ -34,3 +34,14 @@ library(purrr)
 
 ## Problem 2
 
+Creating a `city_state` variable (e.g. “Baltimore, MD”), and a binary variable indicating whether the homicide is solved. Omitting cities Dallas, TX; Phoenix, AZ; and Kansas City, MO as these don’t report victim race. Also omiting Tulsa, AL as this is a data entry mistake. For this problem, limit the analysis those for whom victim_race is white or black. Ensuring that victim_age is numeric.
+
+```{r}
+homicide_df = 
+  read_csv("data/homicide-data.csv", na = c("", "NA", "Unknown")) |> 
+  mutate(
+    city_state = str_c(city, state, sep = ", "),
+    victim_age = as.numeric(victim_age)
+  )
+```
+
