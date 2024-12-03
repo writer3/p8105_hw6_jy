@@ -73,6 +73,7 @@ balt_glm |>
 
 Running `glm` for each of the cities in the dataset, and extracting the adjusted odds ratio (and CI) for solving homicides comparing male victims to female victims. Doing this within a “tidy” pipeline, making use of `purrr::map`, list columns, and unnesting as necessary to create a dataframe with estimated ORs and CIs for each city.
 
+
 ```{r}
 mod_results =
   homicide_df |> 
@@ -94,4 +95,26 @@ mod_results |>
   slice(1:3)|> 
   knitr::kable(digits = 3)
 ```
+
+
+Creating a plot that shows the estimated ORs and CIs for each city. Organizing cities according to estimated OR. 
+
+
+```{r}
+mod_results |> 
+  mutate(city_state = fct_reorder(city_state, OR)) |> 
+  ggplot(aes(x = city_state, y = OR)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = OR_CI_lower, ymax = OR_CI_upper)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+This plot shows that many cities have OR's that include 1 within the confidence intervals, meaning that the OR estimates are not statistically significant. Some cities, such as New York, NY, Baton Rouge, LA, and Baltimore, MD, have OR's less than 1 and the confidence intervals do not include 1, meaning that the crimes with victims that are male have smaller odds of resolution compared to that of female victims adjusting for age and race, and that this is statistically significant for these cities. 
+
+
+
+## Problem 3
+
+
 
