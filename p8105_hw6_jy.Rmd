@@ -78,7 +78,7 @@ bootstrap_result =
 
 Plotting the distribution of estimates.
 
-Using the 5000 bootstrap estimates, identifying the 2.5% and 97.5% quantiles to provide a 95% confidence interval for r^2 and log(β^0∗β^1)
+Using the 5000 bootstrap estimates, 
 
 ```{r}
 bootstrap_result |> 
@@ -94,6 +94,24 @@ bootstrap_result |>
   ggplot(aes(x = log_b1_b2)) +
   geom_histogram()
 ```
+
+
+Identifying the 2.5% and 97.5% quantiles to provide a 95% confidence interval for r^2 and log(β^0∗β^1)
+
+```{r}
+r_ci = 
+  bootstrap_result |> 
+  pull(r.squared) |> 
+  quantile(probs = c(.025, .975))
+
+b0_b1_ci =
+ bootstrap_result |> 
+  pull(log_b0_b1) |> 
+  quantile(probs = c(.025, .975))
+```
+
+The 95% CI of r^2 is (`r r_ci[[1]]`, `r r_ci[[2]]`), and the 95% CI of log(β^0∗β^1) is (`r b0_b1_ci[[1]]`, `r b0_b1_ci [[2]]`).
+
 
 ## Problem 2
 
