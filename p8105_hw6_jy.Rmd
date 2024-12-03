@@ -116,5 +116,41 @@ This plot shows that many cities have OR's that include 1 within the confidence 
 
 ## Problem 3
 
+Loading and cleaning the data for regression analysis. Converting numeric to factor where appropriate and checking for missing data.
+
+```{r}
+birthweight_df =
+  read_csv("data/birthweight.csv") |> 
+  janitor::clean_names() |>
+  drop_na() |> 
+  mutate(
+    babysex = factor(case_match(babysex, 1 ~ "male", 2 ~ "female")),
+    frace = factor(case_match(frace, 
+                              1 ~ "white", 
+                              2 ~ "black", 
+                              3 ~ "asian", 
+                              4 ~ "puerto rican", 
+                              8 ~ "other", 
+                              9 ~ "unknown")),
+    malform = factor(case_match(malform, 0 ~ "absent", 1 ~ "present")),
+    mrace = factor(case_match(mrace, 
+                              1 ~ "white", 
+                              2 ~ "black", 
+                              3 ~ "asian", 
+                              4 ~ "puerto rican", 
+                              8 ~ "other", 
+                              9 ~ "unknown"))
+  )
+```
 
 
+Building a linear regression model for birthweight on a data-driven modeling-building process.
+
+```{r}
+lin_mod = lm(bwt ~ ., data = birthweight_df)
+fin_mod = step(lin_mod, trace = 1)
+
+summary(fin_mod)
+```
+
+The initial linear regression model was fit with `bwt` as the dependent variable and `.` or all other columns in the dataset as independent variables. Then `step` function was used to perform a stepwise model selection to refine the model. The dafult method, or the backward elimination, was used
