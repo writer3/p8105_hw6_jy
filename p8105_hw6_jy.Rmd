@@ -32,6 +32,69 @@ library(modelr)
 library(purrr)
 ```
 
+## Problem 1
+
+Loading weather data
+
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+```
+
+Using 5000 bootstrap samples. For each bootstrap sample, producing estimates of two quantities: r^2 and log(β^0∗β^1). 
+
+```{r}
+bootstrap_result = 
+  weather_df |> 
+  modelr::bootstrap(n = 5000) |> 
+  mutate(
+    model = map(strap, \(df) lm(tmax ~ tmin + prcp, data = df)),
+    out1 = map(model, broom::tidy),
+    out2 = map(model, broom::glance)) |> 
+  unnest(out1, out2) |>
+  select(.id, term, estimate, r.squared) |> 
+  pivot_wider(
+    names_from = term,
+    values_from = estimate
+  ) |> 
+  rename(
+    beta0 = "(Intercept)",
+    beta1 = tmin,
+    beta2 = prcp) |> 
+  summarize(r.squared, log_b1_b2 = log(beta1 * beta2),
+            log_b0_b1 = log(beta0 * beta1))
+
+```
+
+
+Plotting the distribution of estimates.
+
+Using the 5000 bootstrap estimates, identifying the 2.5% and 97.5% quantiles to provide a 95% confidence interval for r^2 and log(β^0∗β^1)
+
+```{r}
+bootstrap_result |> 
+  ggplot(aes(x = r.squared)) +
+  geom_histogram()
+```
+
+The plot shows that median of the estimates of r^2 is close to 0.92, which means the model is well-fitted with the chosen variables.  
+
+
+```{r}
+bootstrap_result |> 
+  ggplot(aes(x = log_b1_b2)) +
+  geom_histogram()
+```
+
 ## Problem 2
 
 Creating a `city_state` variable (e.g. “Baltimore, MD”), and a binary variable called `resolution` indicating whether the homicide is solved. Omitting cities Dallas, TX; Phoenix, AZ; and Kansas City, MO as these don’t report victim race. Also omiting Tulsa, AL as this is a data entry mistake. For this problem, limiting the analysis those for whom victim_race is white or black. Ensuring that victim_age is numeric.
