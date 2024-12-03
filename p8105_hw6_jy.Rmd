@@ -153,4 +153,36 @@ fin_mod = step(lin_mod, trace = 1)
 summary(fin_mod)
 ```
 
-The initial linear regression model was fit with `bwt` as the dependent variable and `.` or all other columns in the dataset as independent variables. Then `step` function was used to perform a stepwise model selection to refine the model. The dafult method, or the backward elimination, was used
+The initial linear regression model was fit with `bwt` as the dependent variable and `.` or all other columns in the dataset as independent variables. Then `step` function was used to perform a stepwise model selection to refine the model. The default method, or the backward elimination, was used.
+
+Plotting the model residuals against fitted values
+
+```{r}
+birthweight_df |> 
+  add_predictions(fin_mod) |> 
+  add_residuals(fin_mod) |> 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) +
+  labs(title = "Model Residuals Against Fitted Values",
+       x = "Fitted Values",
+       y = "Residuals")
+```
+
+
+Making two models for comparison: first one using length at birth and gestational age as predictors (main effects only), and the second one using head circumference, length, sex, and all interactions (including the three-way interaction) between these. 
+
+```{r}
+length_age_mod = lm(bwt ~ blength + gaweeks, data = birthweight_df)
+
+summary(length_age_mod)
+
+
+
+head_full_mod = lm(bwt ~ bhead * blength * babysex, data = birthweight_df)
+
+summary(head_full_mod)
+```
+
+
+Comparing my model to two others Using `crossv_mc` and functions in `purrr` as appropriate.
