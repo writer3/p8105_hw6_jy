@@ -185,4 +185,49 @@ summary(head_full_mod)
 ```
 
 
-Comparing my model to two others Using `crossv_mc` and functions in `purrr` as appropriate.
+Comparing my model to two others Using `crossv_mc` and functions in `purrr` as appropriate. 
+
+Using `crossv_mc` to create training and testing sets, then converting to tibbles.
+
+```{r}
+cv_df =
+  crossv_mc(birthweight_df, 100) |> 
+  mutate(
+    train = map(train, as_tibble),
+    test = map(test, as_tibble)
+  )
+```
+
+
+Applying each model to the training set dataframe and evaluating all testing dataframe using `rmse`.
+
+```{r}
+cv_result =
+  cv_df |> 
+  mutate(
+    fin_model = map(train, ~fin_mod),
+    length_age_model = map(train, ~length_age_mod),
+    head_full_model = map(train, ~head_full_mod),
+  ) |> 
+  mutate(
+    rmse_fin_mod = map2_dbl(fin_model, 
+                            test, \(mod, df) rmse(model = mod, data = df)),
+    rmse_length_age_mod = map2_dbl(length_age_model, 
+                                   test, \(mod, df) rmse(model = mod, data = df)),
+    rmse_head_full_mod = map2_dbl(head_full_model, 
+                                   test, \(mod, df) rmse(model = mod, data = df))
+  )
+
+cv_df |> 
+  select(starts_with("rmse")) |> 
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_") |> 
+  mutate(model = fct_inorder(model)) |> 
+  ggplot(aes(x = model, y = rmse)) + 
+  geom_violin()
+
+```
+
