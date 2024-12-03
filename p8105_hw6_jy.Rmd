@@ -218,7 +218,7 @@ cv_result =
                                    test, \(mod, df) rmse(model = mod, data = df))
   )
 
-cv_df |> 
+cv_result |> 
   select(starts_with("rmse")) |> 
   pivot_longer(
     everything(),
